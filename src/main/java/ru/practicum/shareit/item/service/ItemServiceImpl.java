@@ -19,21 +19,14 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepositoryInMemory userRepositoryInMemory;
 
     public Item create(Item item, long userId) {
-        if (userRepositoryInMemory.getById(userId) == null) {
-            log.error("пользователя не существует");
-            throw new NotFoundException("пользователя не существует");
-        }
+        notFoundUser(userId);
         item.setOwner(userRepositoryInMemory.getById(userId));
         return itemRepositoryInMemory.create(item);
     }
 
     public Item update(Item item, long id, long userId) {
-        if (userRepositoryInMemory.getById(userId) == null) {
-            log.error("пользователя не существует");
-            throw new NotFoundException("пользователя не существует");
-        }
-        if (userRepositoryInMemory.getById(userId) == null ||
-                itemRepositoryInMemory.getById(id).getOwner().getId() != userId) {
+        notFoundUser(userId);
+        if (itemRepositoryInMemory.getById(id).getOwner().getId() != userId) {
             log.error("неверный пользователь");
             throw new NotFoundException("неверный пользователь");
         }
@@ -45,14 +38,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public List<Item> getAll(long userId) {
-        if (userRepositoryInMemory.getById(userId) == null) {
-            log.error("пользователя не существует");
-            throw new NotFoundException("пользователя не существует");
-        }
-        if (userRepositoryInMemory.getById(userId) == null) {
-            log.error("неверный пользователь");
-            throw new NotFoundException("неверный пользователь");
-        }
+        notFoundUser(userId);
         return itemRepositoryInMemory.getAll().stream()
                 .filter(item -> item.getOwner().getId() == userId)
                 .collect(Collectors.toList());
@@ -60,5 +46,12 @@ public class ItemServiceImpl implements ItemService {
 
     public List<Item> search(String text) {
         return itemRepositoryInMemory.search(text);
+    }
+
+    public void notFoundUser(long userId) {
+        if (userRepositoryInMemory.getById(userId) == null) {
+            log.error("пользователя не существует");
+            throw new NotFoundException("пользователя не существует");
+        }
     }
 }
