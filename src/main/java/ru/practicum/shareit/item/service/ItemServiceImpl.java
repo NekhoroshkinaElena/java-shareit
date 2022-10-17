@@ -53,8 +53,9 @@ public class ItemServiceImpl implements ItemService {
             log.error("неверный пользователь");
             throw new NotFoundException("неверный пользователь");
         }
-        return itemRepositoryInMemory.getAll().stream().
-                filter(item -> item.getOwner().getId() == userId).collect(Collectors.toList());
+        return itemRepositoryInMemory.getAll().stream()
+                .filter(item -> item.getOwner().getId() == userId)
+                .collect(Collectors.toList());
     }
 
     public List<Item> search(String text) {
