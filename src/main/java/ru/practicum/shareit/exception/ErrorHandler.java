@@ -9,8 +9,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(final ValidationException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmNotFoundException(final ValidationException e) {
+    public ErrorResponse handleNotFoundException(final NotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

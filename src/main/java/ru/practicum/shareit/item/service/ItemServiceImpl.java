@@ -1,35 +1,63 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepositoryInMemory;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepositoryInMemory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final ItemRepositoryInMemory inMemory;
+    private final ItemRepositoryInMemory itemRepositoryInMemory;
+    private final UserRepositoryInMemory userRepositoryInMemory;
 
-    public ItemDto getItemById(long id) {
-        return inMemory.getItem(id);
+    public Item create(Item item, long userId) {
+        if (userRepositoryInMemory.getById(userId) == null) {
+            log.error("пользователя не существует");
+            throw new NotFoundException("пользователя не существует");
+        }
+        item.setOwner(userRepositoryInMemory.getById(userId));
+        return itemRepositoryInMemory.create(item);
     }
 
-    public List<Item> getItems(long userId) {
-        return inMemory.getItems(userId);
+    public Item update(Item item, long id, long userId) {
+        if (userRepositoryInMemory.getById(userId) == null) {
+            log.error("пользователя не существует");
+            throw new NotFoundException("пользователя не существует");
+        }
+        if (userRepositoryInMemory.getById(userId) == null ||
+                itemRepositoryInMemory.getById(id).getOwner().getId() != userId) {
+            log.error("неверный пользователь");
+            throw new NotFoundException("неверный пользователь");
+        }
+        return itemRepositoryInMemory.update(item, id);
     }
 
-    public ItemDto createItem(Item item, long id) {
-        return inMemory.createItem(item, id);
+    public Item getById(long id) {
+        return itemRepositoryInMemory.getById(id);
     }
 
-    public Item itemUpdate(Item item, long id, long userId) {
-        return inMemory.itemUpdate(item, id, userId);
+    public List<Item> getAll(long userId) {
+        if (userRepositoryInMemory.getById(userId) == null) {
+            log.error("пользователя не существует");
+            throw new NotFoundException("пользователя не существует");
+        }
+        if (userRepositoryInMemory.getById(userId) == null) {
+            log.error("неверный пользователь");
+            throw new NotFoundException("неверный пользователь");
+        }
+        return itemRepositoryInMemory.getAll().stream().
+                filter(item -> item.getOwner().getId() == userId).collect(Collectors.toList());
     }
 
-    public List<Item> searchItems(String text) {
-        return inMemory.searchItems(text);
+    public List<Item> search(String text) {
+        return itemRepositoryInMemory.search(text);
     }
 }

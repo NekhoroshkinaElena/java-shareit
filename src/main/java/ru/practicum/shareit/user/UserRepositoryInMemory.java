@@ -1,6 +1,6 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.model.User;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-@Data
+@Getter
 @Slf4j
 @Repository
 public class UserRepositoryInMemory {
@@ -17,35 +17,23 @@ public class UserRepositoryInMemory {
     private HashMap<Long, User> users = new HashMap<>();
     private long uniqueId = 1;
 
-    public List<User> getUsers() {
+    public List<User> getAll() {
         return new ArrayList<>(users.values());
     }
 
-    public User getUser(long id) {
+    public User getById(long id) {
         return users.get(id);
     }
 
-    public User addUser(User user) {
-        for (User u : users.values()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                log.error("Пользователь с таким email уже существует");
-                throw new RuntimeException("Пользователь с таким email уже существует");
-            }
-        }
-        User user1 = new User(getUniqueId(), user.getName(), user.getEmail());
-        users.put(user1.getId(), user1);
-        return user1;
+    public User add(User user) {
+        user.setId(getUniqueId());
+        users.put(user.getId(), user);
+        return user;
     }
 
-    public User userUpdate(User user, long id) {
+    public User update(User user, long id) {
         User userUpdate = users.get(id);
         if (user.getEmail() != null) {
-            for (User u : users.values()) {
-                if (u.getEmail().equals(user.getEmail())) {
-                    log.error("Пользователь с таким email уже существует");
-                    throw new RuntimeException("Пользователь с таким email уже существует");
-                }
-            }
             userUpdate.setEmail(user.getEmail());
         }
         if (user.getName() != null) {
@@ -54,7 +42,7 @@ public class UserRepositoryInMemory {
         return userUpdate;
     }
 
-    public void deleteUser(long id) {
+    public void delete(long id) {
         users.remove(id);
     }
 

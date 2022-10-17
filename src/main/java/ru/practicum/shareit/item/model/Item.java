@@ -2,9 +2,8 @@ package ru.practicum.shareit.item.model;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
 /**
  * TODO Sprint add-controllers.
@@ -13,16 +12,13 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class Item {
     private long id;
-    @NotEmpty
     private String name;
-    @NotEmpty
     private String description;
-    @NotNull
     private Boolean available;
-    private String owner;
-    private Long request;
+    private User owner;
+    private ItemRequest request;
 
-    public Item(long id, String name, String description, Boolean available, String owner, Long request) {
+    public Item(long id, String name, String description, Boolean available, User owner, ItemRequest request) {
         this.id = id;
         this.name = name;
         this.description = description;
