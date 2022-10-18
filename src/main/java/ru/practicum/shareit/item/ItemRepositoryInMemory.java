@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
@@ -16,7 +15,6 @@ import java.util.Map;
 @Getter
 @Setter
 @RequiredArgsConstructor
-@Slf4j
 public class ItemRepositoryInMemory {
     private final Map<Long, Item> items = new HashMap<>();
     private long id = 1;

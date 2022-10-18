@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.model.User;
 
@@ -10,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 
 @Getter
-@Slf4j
 @Repository
 public class UserRepositoryInMemory {
 
