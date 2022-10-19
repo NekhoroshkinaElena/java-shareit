@@ -3,12 +3,12 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.UserRepositoryInMemory;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -17,34 +17,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepositoryInMemory userRepository;
 
     public User add(User user) {
-        for (User u : userRepository.getAll()) {
-            if (Objects.equals(user.getEmail(), u.getEmail())) {
-                log.error("Пользователь с таким email уже существует");
-                throw new RuntimeException("Пользователь с таким email уже существует");
-            }
-        }
+        throwIfUserAlreadyExist(user);
         return userRepository.add(user);
     }
 
     public User getById(long id) {
-        if (userRepository.getById(id) == null) {
-            log.error("пользователь не найден");
-            throw new NotFoundException("пользователь не найден");
-        }
+        throwIfUserNotFound(id);
         return userRepository.getById(id);
     }
 
     public User update(User user, long id) {
-        if (userRepository.getById(id) == null) {
-            log.error("пользователь не найден");
-            throw new NotFoundException("пользователь не найден");
-        }
-        for (User u : userRepository.getAll()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                log.error("Пользователь с таким email уже существует");
-                throw new RuntimeException("Пользователь с таким email уже существует");
-            }
-        }
+        throwIfUserNotFound(id);
+        throwIfUserAlreadyExist(user);
         return userRepository.update(user, id);
     }
 
@@ -54,5 +38,21 @@ public class UserServiceImpl implements UserService {
 
     public void delete(long id) {
         userRepository.delete(id);
+    }
+
+    public void throwIfUserNotFound(long userId) {
+        if (userRepository.getById(userId) == null) {
+            log.error("пользователя c идентификатором " + userId + " не существует");
+            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует");
+        }
+    }
+
+    public void throwIfUserAlreadyExist(User user) {
+        for (User u : userRepository.getAll()) {
+            if (u.getEmail().equals(user.getEmail())) {
+                log.error("Пользователь с email " + user.getEmail() + " уже существует");
+                throw new AlreadyExistsException("Пользователь с email " + user.getEmail() + " уже существует");
+            }
+        }
     }
 }
