@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepositoryInMemory;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepositoryInMemory;
 
@@ -18,34 +20,36 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepositoryInMemory itemRepositoryInMemory;
     private final UserRepositoryInMemory userRepositoryInMemory;
 
-    public Item create(Item item, long userId) {
+    public ItemDto create(ItemDto itemDto, long userId) {
+        Item item = ItemMapper.toItem(itemDto);
         throwIfUserNotFound(userId);
         item.setOwner(userRepositoryInMemory.getById(userId));
-        return itemRepositoryInMemory.create(item);
+        return ItemMapper.toItemDto(itemRepositoryInMemory.create(item));
     }
 
-    public Item update(Item item, long id, long userId) {
+    public ItemDto update(ItemDto itemDto, long id, long userId) {
+        Item item = ItemMapper.toItem(itemDto);
         throwIfUserNotFound(userId);
         if (itemRepositoryInMemory.getById(id).getOwner().getId() != userId) {
             log.error("неверный пользователь");
             throw new NotFoundException("неверный пользователь");
         }
-        return itemRepositoryInMemory.update(item, id);
+        return ItemMapper.toItemDto(itemRepositoryInMemory.update(item, id));
     }
 
-    public Item getById(long id) {
-        return itemRepositoryInMemory.getById(id);
+    public ItemDto getById(long id) {
+        return ItemMapper.toItemDto(itemRepositoryInMemory.getById(id));
     }
 
-    public List<Item> getAll(long userId) {
+    public List<ItemDto> getAll(long userId) {
         throwIfUserNotFound(userId);
         return itemRepositoryInMemory.getAll().stream()
-                .filter(item -> item.getOwner().getId() == userId)
+                .filter(item -> item.getOwner().getId() == userId).map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
-    public List<Item> search(String text) {
-        return itemRepositoryInMemory.search(text);
+    public List<ItemDto> search(String text) {
+        return itemRepositoryInMemory.search(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     public void throwIfUserNotFound(long userId) {
