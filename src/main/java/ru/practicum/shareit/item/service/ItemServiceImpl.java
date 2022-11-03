@@ -69,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemOutputDto getById(long itemId, long ownerId) {//ЕСЛИ НЕТ БРОНИРОВАНИЙ ВОЗВРАЩАЕМ NULL!!!!
+    public ItemOutputDto getById(long itemId, long ownerId) {
         throwIfItemNotFound(itemId);
         Item item = itemRepository.findById(itemId).get();
         ItemOutputDto itemOutputDto = ItemMapper.toItemDtoOutput(item);
