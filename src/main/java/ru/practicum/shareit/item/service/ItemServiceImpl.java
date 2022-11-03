@@ -91,8 +91,8 @@ public class ItemServiceImpl implements ItemService {
                 itemOutputDto.setNextBooking(bookingDtoFuture);
             }
         }
-        itemOutputDto.setComments(commentRepository.getAllByItem_Id(itemId).stream().
-                map(CommentMapper::commentDtoOutput).collect(Collectors.toList()));
+        itemOutputDto.setComments(commentRepository.getAllByItem_Id(itemId).stream()
+                .map(CommentMapper::commentDtoOutput).collect(Collectors.toList()));
         return itemOutputDto;
     }
 
@@ -112,8 +112,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public CommentDtoOutput addComment(long itemId, long userId, CommentDto commentDto) {
-        Booking booking = bookingRepository.findBookingByItem_IdAndBooker_IdAndEndBefore
-                (itemId, userId, LocalDateTime.now());
+        Booking booking = bookingRepository.findBookingByItem_IdAndBooker_IdAndEndBefore(
+                itemId, userId, LocalDateTime.now());
         if (booking == null) {
             log.error("Вы не можете оставить комментарий");
             throw new ValidationException("Вы не можете оставить комментарий");

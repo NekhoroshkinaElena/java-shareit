@@ -85,7 +85,6 @@ public class BookingServiceImpl implements BookingService {
             log.error("такой вещи не существует");
             throw new NotFoundException("такой вещи не существует");
         }
-
         if (bookingRepository.findById(bookingId).get().getBooker().getId() != userId) {
             if (itemRepository.findById(
                     bookingRepository.findById(bookingId).get().getItem().getId()).get().getOwner().getId() != userId) {
@@ -105,24 +104,24 @@ public class BookingServiceImpl implements BookingService {
         }
         switch (state) {
             case "ALL":
-                return bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "WAITING":
-                return bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "PAST":
-                return bookingRepository.findAllByBooker_IdAndEndBeforeOrderByStartDesc(bookerId, LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdAndEndBeforeOrderByStartDesc(bookerId, LocalDateTime.now())
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "FUTURE":
-                return bookingRepository.findAllByBooker_IdAndStartAfterOrderByStartDesc(bookerId, LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdAndStartAfterOrderByStartDesc(bookerId, LocalDateTime.now())
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "REJECTED":
-                return bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "CURRENT":
-                return bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc
-                                (bookerId, LocalDateTime.now(), LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId,
+                                LocalDateTime.now(), LocalDateTime.now())
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             default:
                 log.error("неверный статус");
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
@@ -134,24 +133,25 @@ public class BookingServiceImpl implements BookingService {
         throwIfUserNotFound(ownerId);
         switch (state) {
             case "ALL":
-                return bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(ownerId).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(ownerId)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "WAITING":
-                return bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "PAST":
-                return bookingRepository.findAllByItem_OwnerIdAndEndBeforeOrderByStartDesc(ownerId, LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdAndEndBeforeOrderByStartDesc(ownerId, LocalDateTime.now())
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "FUTURE":
-                return bookingRepository.findAllByItem_OwnerIdAndStartAfterOrderByStartDesc(ownerId, LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdAndStartAfterOrderByStartDesc(ownerId,
+                                LocalDateTime.now()).stream().map(BookingMapper::toBookingDtoOutput)
+                        .collect(Collectors.toList());
             case "REJECTED":
-                return bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED)
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             case "CURRENT":
-                return bookingRepository.findAllByItem_OwnerIdAndStartBeforeAndEndAfterOrderByStartDesc
-                                (ownerId, LocalDateTime.now(), LocalDateTime.now()).
-                        stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+                return bookingRepository.findAllByItem_OwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                                ownerId, LocalDateTime.now(), LocalDateTime.now())
+                        .stream().map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
             default:
                 log.error("неверный статус");
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");

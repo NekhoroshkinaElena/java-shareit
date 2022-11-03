@@ -1,13 +1,11 @@
 package ru.practicum.shareit.booking.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -19,8 +17,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByBooker_IdAndEndBeforeOrderByStartDesc(long bookerId, LocalDateTime date);
 
-    List<Booking> findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc
-            (long bookerId, LocalDateTime dateTime, LocalDateTime dateTime2);
+    List<Booking> findAllByBooker_IdAndStartBeforeAndEndAfterOrderByStartDesc(long bookerId, LocalDateTime dateTime,
+                                                                              LocalDateTime dateTime2);
 
     List<Booking> findAllByItem_OwnerIdAndStatusOrderByStartDesc(long ownerId, BookingStatus state);
 
@@ -30,8 +28,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByItem_OwnerIdAndEndBeforeOrderByStartDesc(long bookerId, LocalDateTime date);
 
-    List<Booking> findAllByItem_OwnerIdAndStartBeforeAndEndAfterOrderByStartDesc
-            (long bookerId, LocalDateTime dateTime, LocalDateTime dateTime2);
+    List<Booking> findAllByItem_OwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(long bookerId, LocalDateTime dateTime,
+                                                                                 LocalDateTime dateTime2);
 
     Booking findByItem_IdAndEndBefore(long itemId, LocalDateTime date);
 
