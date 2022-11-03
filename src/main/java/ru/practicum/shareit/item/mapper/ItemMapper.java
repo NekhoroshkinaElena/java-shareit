@@ -29,7 +29,8 @@ public class ItemMapper {
     }
 
     public static ItemDtoForBooking toItemDtoForBooking(Item item) {
-        return new ItemDtoForBooking(item.getId(), item.getName());
+        return new ItemDtoForBooking(item.getId(),
+                item.getName());
     }
 
     public static ItemOutputDto toItemDtoOutput(Item item) {

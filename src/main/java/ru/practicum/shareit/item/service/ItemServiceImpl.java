@@ -9,7 +9,7 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.comment.CommentRepository;
 import ru.practicum.shareit.item.comment.Comment;
-import ru.practicum.shareit.item.comment.CommentDto;
+import ru.practicum.shareit.item.comment.CommentDtoInput;
 import ru.practicum.shareit.item.comment.CommentDtoOutput;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -73,13 +73,11 @@ public class ItemServiceImpl implements ItemService {
         throwIfItemNotFound(itemId);
         Item item = itemRepository.findById(itemId).get();
         ItemOutputDto itemOutputDto = ItemMapper.toItemDtoOutput(item);
-
         if (itemRepository.findById(itemId).get().getOwner().getId() == ownerId) {
             BookingDtoForItem bookingDtoLast = new BookingDtoForItem();
             BookingDtoForItem bookingDtoFuture = new BookingDtoForItem();
             Booking bookingLast = bookingRepository.findByItem_IdAndEndBefore(itemId, LocalDateTime.now());
             Booking bookingFuture = bookingRepository.findFirstByItem_IdAndStartAfter(itemId, LocalDateTime.now());
-
             if (bookingLast != null) {
                 bookingDtoLast.setBookerId(bookingLast.getBooker().getId());
                 bookingDtoLast.setId(bookingLast.getId());
@@ -111,18 +109,18 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.search(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
-    public CommentDtoOutput addComment(long itemId, long userId, CommentDto commentDto) {
+    public CommentDtoOutput addComment(long itemId, long userId, CommentDtoInput commentDtoInput) {
         Booking booking = bookingRepository.findBookingByItem_IdAndBooker_IdAndEndBefore(
                 itemId, userId, LocalDateTime.now());
         if (booking == null) {
             log.error("Вы не можете оставить комментарий");
             throw new ValidationException("Вы не можете оставить комментарий");
         }
-        if (commentDto.getText().isEmpty() || commentDto.getText().isBlank()) {
+        if (commentDtoInput.getText().isEmpty() || commentDtoInput.getText().isBlank()) {
             log.error("комментарий не может быть пустым");
             throw new ValidationException("комментарий не может быть пустым");
         }
-        Comment comment = CommentMapper.toComment(commentDto);
+        Comment comment = CommentMapper.toComment(commentDtoInput);
         comment.setItem(itemRepository.findById(itemId).get());
         comment.setAuthor(userRepository.findById(userId).get());
         comment.setItem(itemRepository.findById(itemId).get());

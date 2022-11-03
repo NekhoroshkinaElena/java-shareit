@@ -16,16 +16,12 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
     @Column(name = "text_comment")
     private String text;
-
     @ManyToOne
     private Item item;
-
     @ManyToOne
     private User author;
-
     @Column(name = "created")
     private LocalDateTime created;
 

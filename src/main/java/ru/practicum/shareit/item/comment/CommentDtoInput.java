@@ -7,8 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Getter
-public class CommentDto {
-
+public class CommentDtoInput {
     @NotNull
     @NotEmpty
     @NotBlank

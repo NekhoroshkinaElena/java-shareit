@@ -20,20 +20,24 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private long id;
-
     @Column(name = "start_date")
     private LocalDateTime start;
-
     @Column(name = "end_date")
     private LocalDateTime end;
-
     @OneToOne
     private Item item;
-
     @OneToOne
     private User booker;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingStatus status;
+
+    public Booking(LocalDateTime start, LocalDateTime end, BookingStatus status) {
+        this.start = start;
+        this.end = end;
+        this.status = status;
+    }
+
+    public Booking() {
+    }
 }

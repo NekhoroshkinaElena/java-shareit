@@ -12,14 +12,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class BookingDtoInput {
-
     @NotBlank
     @NotNull
     private long itemId;
-
     @NotNull
     private LocalDateTime start;
-
     @NotNull
     private LocalDateTime end;
 }

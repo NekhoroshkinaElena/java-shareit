@@ -9,7 +9,7 @@ public class CommentMapper {
                 comment.getText(), comment.getAuthor().getName(), comment.getCreated());
     }
 
-    public static Comment toComment(CommentDto commentDto) {
-        return new Comment(commentDto.getText(), LocalDateTime.now());
+    public static Comment toComment(CommentDtoInput commentDtoInput) {
+        return new Comment(commentDtoInput.getText(), LocalDateTime.now());
     }
 }
