@@ -1,22 +1,21 @@
 package ru.practicum.shareit.booking.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-bookings.
  */
-@Getter
-@Setter
+@Value
 public class BookingDtoInput {
     @NotBlank
     @NotNull
-    private long itemId;
+    long itemId;
     @NotNull
-    private LocalDateTime start;
+    LocalDateTime start;
     @NotNull
-    private LocalDateTime end;
+    LocalDateTime end;
 }

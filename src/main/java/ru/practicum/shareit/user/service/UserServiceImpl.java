@@ -26,20 +26,19 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getById(long id) {
-        throwIfUserNotFound(id);
-        User user = userRepository.findById(id).get();
+        User user = getUser(id);
         return UserMapper.toUserDto(user);
     }
 
     public UserDto update(UserDto userDto, long id) {
-        throwIfUserNotFound(id);
-        User updateUser = userRepository.findById(id).get();
+        User updateUser = getUser(id);
         if (userDto.getName() != null) {
             updateUser.setName(userDto.getName());
         }
         if (userDto.getEmail() != null) {
             if (userRepository.findAll().stream()
                     .anyMatch(u -> u.getEmail().toLowerCase(Locale.ROOT).equals(userDto.getEmail().toLowerCase()))) {
+                log.error("Пользователь с почтой " + userDto.getEmail() + " уже добавлен.");
                 throw new AlreadyExistsException("Пользователь с почтой " + userDto.getEmail() + " уже добавлен.");
             }
             updateUser.setEmail(userDto.getEmail());
@@ -55,10 +54,11 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    public void throwIfUserNotFound(long userId) {
-        if (userRepository.findById(userId).isEmpty()) {
-            log.error("пользователя c идентификатором " + userId + " не существует");
-            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует");
-        }
+    private User getUser(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("Пользователя c идентификатором " + userId + " не существует.");
+                    return new NotFoundException("Пользователя c идентификатором " + userId + " не существует.");
+                });
     }
 }

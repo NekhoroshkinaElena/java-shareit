@@ -15,6 +15,7 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -35,23 +36,21 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemDto create(ItemDto itemDto, long userId) {
         Item item = ItemMapper.toItem(itemDto);
-        throwIfUserNotFound(userId);
-        item.setOwner(userRepository.findById(userId).get());
+        item.setOwner(getUser(userId));
         if (item.getRequest() != null) {
             itemRequestRepository.save(item.getRequest());
         }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public ItemDto update(ItemDto itemDto, long id, long userId) {
+    public ItemDto update(ItemDto itemDto, long itemId, long userId) {
         Item item = ItemMapper.toItem(itemDto);
         throwIfUserNotFound(userId);
-        throwIfItemNotFound(id);
-        if (itemRepository.findById(id).get().getOwner().getId() != userId || userId == 0) {
-            log.error("обновить информацию о вещи может только её владелец");
-            throw new NotFoundException("обновить информацию о вещи может только её владелец");
+        if (getItem(itemId).getOwner().getId() != userId || userId == 0) {
+            log.error("Обновить информацию о вещи может только её владелец.");
+            throw new NotFoundException("Обновить информацию о вещи может только её владелец.");
         }
-        Item itemUpdate = itemRepository.findById(id).get();
+        Item itemUpdate = getItem(itemId);
         if (item.getAvailable() != null) {
             itemUpdate.setAvailable(item.getAvailable());
         }
@@ -66,12 +65,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemOutputDto getById(long itemId, long ownerId) {
-        throwIfItemNotFound(itemId);
-        Item item = itemRepository.findById(itemId).get();
+        Item item = getItem(itemId);
         ItemOutputDto itemOutputDto = ItemMapper.toItemDtoOutput(item);
-        if (itemRepository.findById(itemId).get().getOwner().getId() == ownerId) {
-            Booking bookingLast = bookingRepository.findByItem_IdAndEndBefore(itemId, LocalDateTime.now());
-            Booking bookingFuture = bookingRepository.findFirstByItem_IdAndStartAfter(itemId, LocalDateTime.now());
+        if (item.getOwner().getId() == ownerId) {
+            Booking bookingLast = bookingRepository.findByItemIdAndEndBefore(itemId, LocalDateTime.now());
+            Booking bookingFuture = bookingRepository.findFirstByItemIdAndStartAfter(itemId, LocalDateTime.now());
             if (bookingLast != null) {
                 itemOutputDto.setLastBooking(BookingMapper.toBookingDtoForItem(bookingLast));
             }
@@ -79,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
                 itemOutputDto.setNextBooking(BookingMapper.toBookingDtoForItem(bookingFuture));
             }
         }
-        itemOutputDto.setComments(commentRepository.getAllByItem_Id(itemId).stream()
+        itemOutputDto.setComments(commentRepository.getAllByItemId(itemId).stream()
                 .map(CommentMapper::commentDtoOutput).collect(Collectors.toList()));
         return itemOutputDto;
     }
@@ -100,37 +98,44 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public CommentDtoOutput addComment(long itemId, long userId, CommentDtoInput commentDtoInput) {
-        Booking booking = bookingRepository.findBookingByItem_IdAndBooker_IdAndEndBefore(
+        Booking booking = bookingRepository.findBookingByItemIdAndBookerIdAndEndBefore(
                 itemId, userId, LocalDateTime.now());
         if (booking == null) {
-            log.error("отзыв может оставить только тот пользователь, " +
-                    "который брал эту вещь в аренду, и только после окончания срока аренды");
-            throw new ValidationException("отзыв может оставить только тот пользователь, " +
-                    "который брал эту вещь в аренду, и только после окончания срока аренды");
+            log.error("Отзыв может оставить только тот пользователь, " +
+                    "который брал эту вещь в аренду, и только после окончания срока аренды.");
+            throw new ValidationException("Отзыв может оставить только тот пользователь, " +
+                    "который брал эту вещь в аренду, и только после окончания срока аренды.");
         }
         if (commentDtoInput.getText().isEmpty() || commentDtoInput.getText().isBlank()) {
-            log.error("комментарий не может быть пустым");
-            throw new ValidationException("комментарий не может быть пустым");
+            log.error("Комментарий не может быть пустым.");
+            throw new ValidationException("Комментарий не может быть пустым.");
         }
         Comment comment = CommentMapper.toComment(commentDtoInput);
-        comment.setItem(itemRepository.findById(itemId).get());
-        comment.setAuthor(userRepository.findById(userId).get());
-        comment.setItem(itemRepository.findById(itemId).get());
-        comment.setAuthor(userRepository.findById(userId).get());
+        comment.setItem(getItem(itemId));
+        comment.setAuthor(getUser(userId));
         return CommentMapper.commentDtoOutput(commentRepository.save(comment));
     }
 
     public void throwIfUserNotFound(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
-            log.error("пользователя c идентификатором " + userId + " не существует");
-            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует");
+            log.error("Пользователя c идентификатором " + userId + " не существует.");
+            throw new NotFoundException("Пользователя c идентификатором " + userId + " не существует.");
         }
     }
 
-    public void throwIfItemNotFound(long itemId) {
-        if (itemRepository.findById(itemId).isEmpty()) {
-            log.error("вещи c идентификатором " + itemId + " не существует");
-            throw new NotFoundException("вещи c идентификатором " + itemId + " не существует");
-        }
+    private Item getItem(long itemId) {
+        return itemRepository.findById(itemId)
+                .orElseThrow(() -> {
+                    log.error("Вещь с id " + itemId + " не найдена.");
+                    return new NotFoundException("Вещь с id " + itemId + " не найдена.");
+                });
+    }
+
+    private User getUser(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("Пользователя c идентификатором " + userId + " не найден.");
+                    return new NotFoundException("Пользователя c идентификатором " + userId + " не найден.");
+                });
     }
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
@@ -12,6 +13,7 @@ import javax.persistence.*;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "items")
 public class Item {
@@ -39,8 +41,5 @@ public class Item {
         this.available = available;
         this.owner = owner;
         this.request = request;
-    }
-
-    public Item() {
     }
 }

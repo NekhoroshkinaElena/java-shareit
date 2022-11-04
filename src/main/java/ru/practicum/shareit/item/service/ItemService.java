@@ -15,7 +15,7 @@ public interface ItemService {
 
     List<ItemOutputDto> getAll(long userId);
 
-    ItemDto update(ItemDto itemDto, long id, long userId);
+    ItemDto update(ItemDto itemDto, long itemId, long userId);
 
     List<ItemDto> search(String text);
 

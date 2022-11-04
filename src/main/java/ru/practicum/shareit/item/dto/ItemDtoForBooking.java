@@ -1,16 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
-@Getter
-@Setter
+@Value
 public class ItemDtoForBooking {
-    private Long id;
-    private String name;
-
-    public ItemDtoForBooking(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+    Long id;
+    String name;
 }
