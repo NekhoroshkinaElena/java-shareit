@@ -35,14 +35,14 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingDtoOutput> getAll(@RequestHeader("X-Sharer-User-Id") long userId,
+    public List<BookingDtoOutput> getAllForBooker(@RequestHeader("X-Sharer-User-Id") long userId,
                                          @RequestParam(required = false, defaultValue = "ALL") String state) {
-        return bookingService.findAll(userId, state);
+        return bookingService.findAllForBooker(userId, state);
     }
 
     @GetMapping("/owner")
-    public List<BookingDtoOutput> getAllOwner(@RequestHeader("X-Sharer-User-Id") long owner,
+    public List<BookingDtoOutput> getAllForOwner(@RequestHeader("X-Sharer-User-Id") long owner,
                                               @RequestParam(required = false, defaultValue = "ALL") String state) {
-        return bookingService.findAllOwner(owner, state);
+        return bookingService.findAllForOwner(owner, state);
     }
 }

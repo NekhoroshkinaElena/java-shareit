@@ -56,13 +56,15 @@ public class BookingServiceImpl implements BookingService {
     public BookingDtoOutput approve(long userId, long bookingId, boolean status) {
         throwIfUserNotFound(userId);
         if (bookingRepository.findById(bookingId).get().getItem().getOwner().getId() != userId) {
-            log.error("неверный пользователь");
-            throw new NotFoundException("неверный пользователь");
+            log.error("подтверждение или отклонение запроса на бронирование может быть выполнено " +
+                    "только владельцем вещи.");
+            throw new NotFoundException("подтверждение или отклонение запроса на бронирование может быть выполнено " +
+                    "только владельцем вещи.");
         }
         Booking booking = bookingRepository.findById(bookingId).get();
         if (booking.getStatus().equals(BookingStatus.APPROVED)) {
-            log.error("статус уже подтверждён");
-            throw new ValidationException("статус уже подтверждён");
+            log.error("статус бронирования уже подтверждён");
+            throw new ValidationException("статус бронирования уже подтверждён");
         }
         booking.setStatus(status ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         return BookingMapper.toBookingDtoOutput(bookingRepository.save(booking));
@@ -70,7 +72,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput getById(long bookingId, long userId) {
-        throwIfItemNotFound(bookingId);
+        throwIfBookingNotFound(bookingId);
+        throwIfUserNotFound(userId);
         if (bookingRepository.findById(bookingId).get().getBooker().getId() != userId) {
             if (itemRepository.findById(bookingRepository.findById(bookingId)
                     .get().getItem().getId()).get().getOwner().getId() != userId) {
@@ -83,20 +86,24 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoOutput> findAll(long bookerId, String state) {
+    public List<BookingDtoOutput> findAllForBooker(long bookerId, String state) {
         throwIfUserNotFound(bookerId);
-        return findBooking(bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId), state).stream()
+        return findBookings(bookingRepository.findAllByBooker_IdOrderByStartDesc(bookerId), state).stream()
                 .map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
     }
 
     @Override
-    public List<BookingDtoOutput> findAllOwner(long ownerId, String state) {
+    public List<BookingDtoOutput> findAllForOwner(long ownerId, String state) {
         throwIfUserNotFound(ownerId);
-        return findBooking(bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(ownerId), state).stream()
+        if (itemRepository.findAllByOwnerId(ownerId).isEmpty()) {
+            log.error("вы не можете получить список бронирований, так как у вас нет вещей");
+            throw new ValidationException("вы не можете получить список бронирований, так как у вас нет вещей");
+        }
+        return findBookings(bookingRepository.findAllByItem_OwnerIdOrderByStartDesc(ownerId), state).stream()
                 .map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
     }
 
-    public List<Booking> findBooking(List<Booking> bookings, String state) {
+    public List<Booking> findBookings(List<Booking> bookings, String state) {
         switch (state) {
             case "ALL":
                 return bookings;
@@ -116,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
                 return bookings.stream().filter(booking -> booking.getStart().isBefore(LocalDateTime.now())
                         && booking.getEnd().isAfter(LocalDateTime.now())).collect(Collectors.toList());
             default:
-                log.error("неверный статус");
+                log.error("неизвестный статус");
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
     }
@@ -128,10 +135,10 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    public void throwIfItemNotFound(long bookingId) {
+    public void throwIfBookingNotFound(long bookingId) {
         if (bookingRepository.findById(bookingId).isEmpty()) {
-            log.error("такой вещи не существует");
-            throw new NotFoundException("такой вещи не существует");
+            log.error("такого бронирования не существует");
+            throw new NotFoundException("такого бронирования не существует");
         }
     }
 }

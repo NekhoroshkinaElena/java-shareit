@@ -3,19 +3,15 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingDtoForItem;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.comment.CommentMapper;
-import ru.practicum.shareit.item.comment.CommentRepository;
-import ru.practicum.shareit.item.comment.Comment;
-import ru.practicum.shareit.item.comment.CommentDtoInput;
-import ru.practicum.shareit.item.comment.CommentDtoOutput;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.comment.*;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemOutputDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.ItemRequestRepository;
@@ -52,8 +48,8 @@ public class ItemServiceImpl implements ItemService {
         throwIfUserNotFound(userId);
         throwIfItemNotFound(id);
         if (itemRepository.findById(id).get().getOwner().getId() != userId || userId == 0) {
-            log.error("неверный пользователь");
-            throw new NotFoundException("неверный пользователь");
+            log.error("обновить информацию о вещи может только её владелец");
+            throw new NotFoundException("обновить информацию о вещи может только её владелец");
         }
         Item itemUpdate = itemRepository.findById(id).get();
         if (item.getAvailable() != null) {
@@ -74,19 +70,13 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId).get();
         ItemOutputDto itemOutputDto = ItemMapper.toItemDtoOutput(item);
         if (itemRepository.findById(itemId).get().getOwner().getId() == ownerId) {
-            BookingDtoForItem bookingDtoLast = new BookingDtoForItem();
-            BookingDtoForItem bookingDtoFuture = new BookingDtoForItem();
             Booking bookingLast = bookingRepository.findByItem_IdAndEndBefore(itemId, LocalDateTime.now());
             Booking bookingFuture = bookingRepository.findFirstByItem_IdAndStartAfter(itemId, LocalDateTime.now());
             if (bookingLast != null) {
-                bookingDtoLast.setBookerId(bookingLast.getBooker().getId());
-                bookingDtoLast.setId(bookingLast.getId());
-                itemOutputDto.setLastBooking(bookingDtoLast);
+                itemOutputDto.setLastBooking(BookingMapper.toBookingDtoForItem(bookingLast));
             }
             if (bookingFuture != null) {
-                bookingDtoFuture.setBookerId(bookingFuture.getBooker().getId());
-                bookingDtoFuture.setId(bookingFuture.getId());
-                itemOutputDto.setNextBooking(bookingDtoFuture);
+                itemOutputDto.setNextBooking(BookingMapper.toBookingDtoForItem(bookingFuture));
             }
         }
         itemOutputDto.setComments(commentRepository.getAllByItem_Id(itemId).stream()
@@ -113,8 +103,10 @@ public class ItemServiceImpl implements ItemService {
         Booking booking = bookingRepository.findBookingByItem_IdAndBooker_IdAndEndBefore(
                 itemId, userId, LocalDateTime.now());
         if (booking == null) {
-            log.error("Вы не можете оставить комментарий");
-            throw new ValidationException("Вы не можете оставить комментарий");
+            log.error("отзыв может оставить только тот пользователь, " +
+                    "который брал эту вещь в аренду, и только после окончания срока аренды");
+            throw new ValidationException("отзыв может оставить только тот пользователь, " +
+                    "который брал эту вещь в аренду, и только после окончания срока аренды");
         }
         if (commentDtoInput.getText().isEmpty() || commentDtoInput.getText().isBlank()) {
             log.error("комментарий не может быть пустым");

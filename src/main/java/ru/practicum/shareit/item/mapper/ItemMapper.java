@@ -29,12 +29,14 @@ public class ItemMapper {
     }
 
     public static ItemDtoForBooking toItemDtoForBooking(Item item) {
-        return new ItemDtoForBooking(item.getId(),
+        return new ItemDtoForBooking(
+                item.getId(),
                 item.getName());
     }
 
     public static ItemOutputDto toItemDtoOutput(Item item) {
-        return new ItemOutputDto(item.getId(),
+        return new ItemOutputDto(
+                item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable()
