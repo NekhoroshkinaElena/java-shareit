@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -9,23 +8,14 @@ import javax.validation.constraints.NotNull;
 /**
  * TODO Sprint add-controllers.
  */
-@Getter
-@Setter
+@Value
 public class ItemDto {
-    private long id;
+    long id;
     @NotEmpty
-    private String name;
+    String name;
     @NotEmpty
-    private String description;
+    String description;
     @NotNull
-    private Boolean available;
-    private long requestId;
-
-    public ItemDto(long id, String name, String description, Boolean available, long itemRequest) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-        this.requestId = itemRequest;
-    }
+    Boolean available;
+    long requestId;
 }

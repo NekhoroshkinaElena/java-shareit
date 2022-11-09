@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 /**
@@ -11,9 +12,19 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@Entity
+@Table(name = "REQUESTS")
 public class ItemRequest {
+    @Id
     private long id;
+
+    @Column
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "requestor", referencedColumnName = "id")
     private User requestor;
+
+    @Column(name = "created")
     private LocalDateTime created;
 }
