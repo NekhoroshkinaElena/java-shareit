@@ -142,8 +142,8 @@ public class ItemServiceImpl implements ItemService {
     private User getUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("Пользователя c идентификатором " + userId + " не найден.");
-                    return new NotFoundException("Пользователя c идентификатором " + userId + " не найден.");
+                    log.error("Пользователь c идентификатором " + userId + " не найден.");
+                    return new NotFoundException("Пользователь c идентификатором " + userId + " не найден.");
                 });
     }
 }

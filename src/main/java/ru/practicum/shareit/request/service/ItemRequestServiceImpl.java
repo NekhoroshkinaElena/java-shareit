@@ -31,8 +31,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public ItemRequestDtoOutput add(ItemRequestDtoInput itemRequestDto, long userId) {
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto);
         itemRequest.setRequestor(userRepository.findById(userId).orElseThrow(() -> {
-            log.error("Пользователя c идентификатором " + userId + " не найден.");
-            return new NotFoundException("Пользователя c идентификатором " + userId + " не найден.");
+            log.error("Пользователь c идентификатором " + userId + " не найден.");
+            return new NotFoundException("Пользователь c идентификатором " + userId + " не найден.");
         }));
         itemRequest.setCreated(LocalDateTime.now());
         requestRepository.save(itemRequest);

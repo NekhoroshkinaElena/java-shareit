@@ -144,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
     public void throwIfUserNotFound(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             log.error("Пользователя c идентификатором " + userId + " не существует.");
-            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует");
+            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует.");
         }
     }
 

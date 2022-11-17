@@ -47,7 +47,6 @@ public class ItemServiceImplIntegrationTest {
 
     @Test
     public void create() {
-        UserDto userDto = userService.add(new UserDto(1, "user", "email@ya.ru"));
         ItemDto itemDto = new ItemDto(1L, "item", "description", true, 0);
         itemService.create(itemDto, 1L);
 

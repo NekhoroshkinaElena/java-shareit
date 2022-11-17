@@ -20,7 +20,6 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 
 @Transactional
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-//@Rollback(false)
 @SpringBootTest(
         properties = "db.name=test",
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
