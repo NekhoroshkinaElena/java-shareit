@@ -9,6 +9,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInput;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOutput;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -24,6 +25,8 @@ import static org.mockito.Mockito.when;
 public class ItemRequestServiceTest {
     @InjectMocks
     private ItemRequestServiceImpl requestService;
+    @Mock
+    private ItemRequestRepository itemRequestRepository;
     @Mock
     private UserRepository userRepository;
 

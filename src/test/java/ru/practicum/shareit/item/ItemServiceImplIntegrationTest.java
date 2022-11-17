@@ -32,7 +32,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @Transactional
-//@Rollback(false)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @SpringBootTest(
         properties = "db.name=test",
@@ -47,6 +46,7 @@ public class ItemServiceImplIntegrationTest {
 
     @Test
     public void create() {
+        userService.add(new UserDto(1, "user", "email@ya.ru"));
         ItemDto itemDto = new ItemDto(1L, "item", "description", true, 0);
         itemService.create(itemDto, 1L);
 
