@@ -82,14 +82,14 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void ItemUpdateWithNotFoundUser() {
+    public void itemUpdateWithNotFoundUser() {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.update(itemDto, itemDto.getId(), user.getId()));
         assertEquals("Пользователя c идентификатором " + user.getId() + " не существует.", exception.getMessage());
     }
 
     @Test
-    public void ItemUpdateWithNotFoundItem() {
+    public void itemUpdateWithNotFoundItem() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
 
         NotFoundException exception = assertThrows(NotFoundException.class,
@@ -98,7 +98,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void ItemUpdateWithWrongUser() {
+    public void itemUpdateWithWrongUser() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
@@ -108,7 +108,7 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void ItemUpdate() {
+    public void itemUpdate() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(itemRepository.save(any())).thenReturn(itemUpdate);

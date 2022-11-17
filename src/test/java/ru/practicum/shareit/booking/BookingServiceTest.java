@@ -291,7 +291,7 @@ public class BookingServiceTest {
     }
 
     @Test
-    public void BookingMapperTest() {
+    public void bookingMapperTest() {
         booking.setId(1L);
         booking.setItem(item);
         booking.setBooker(booker);
