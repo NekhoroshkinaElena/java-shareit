@@ -17,12 +17,12 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto item) {
+    public static Item toItem(ItemDto itemDto) {
         return new Item(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
+                itemDto.getId(),
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable(),
                 null,
                 null
         );
