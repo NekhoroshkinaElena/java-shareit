@@ -10,9 +10,7 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.comment.Comment;
-import ru.practicum.shareit.item.comment.CommentDtoInput;
-import ru.practicum.shareit.item.comment.CommentRepository;
+import ru.practicum.shareit.item.comment.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemOutputDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -182,5 +180,26 @@ public class ItemServiceTest {
                 () -> itemService.addComment(item.getId(), user.getId(), commentDtoInput));
         assertEquals("Комментарий не может быть пустым.",
                 exception.getMessage());
+    }
+
+    @Test
+    public void mapperToCommentDtoOutput() {
+        comment.setId(1L);
+        comment.setAuthor(user);
+        comment.setItem(item);
+        CommentDtoOutput commentDtoOutput = CommentMapper.commentDtoOutput(comment);
+        assertEquals(commentDtoOutput.getId(), comment.getId());
+        assertEquals(commentDtoOutput.getText(), comment.getText());
+        assertEquals(commentDtoOutput.getCreated(), comment.getCreated());
+        assertEquals(commentDtoOutput.getAuthorName(), comment.getAuthor().getName());
+    }
+
+    @Test
+    public void mapperToComment() {
+        commentDtoInput.setText("any text");
+        Comment comment = CommentMapper.toComment(commentDtoInput);
+        comment.setItem(item);
+        assertEquals(comment.getText(), commentDtoInput.getText());
+        assertEquals(comment.getItem(), item);
     }
 }

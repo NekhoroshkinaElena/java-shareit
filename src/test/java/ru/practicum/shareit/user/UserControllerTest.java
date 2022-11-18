@@ -56,6 +56,19 @@ public class UserControllerTest {
     }
 
     @Test
+    void saveAlreadyExistUser() throws Exception {
+        when(userService.add(any()))
+                .thenThrow(new AlreadyExistsException(""));
+
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void saveUserWithEmptyEmail() throws Exception {
         when(userService.add(any()))
                 .thenThrow(new ValidationException("Укажите адрес электронной почты"));

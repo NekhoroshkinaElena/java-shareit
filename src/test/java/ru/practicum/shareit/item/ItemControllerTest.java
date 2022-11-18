@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.comment.CommentDtoOutput;
 import ru.practicum.shareit.item.controller.ItemController;
 import ru.practicum.shareit.item.dto.ItemOutputDto;
@@ -54,6 +55,24 @@ public class ItemControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(item.getId()), Long.class));
+    }
+
+    @Test
+    public void createItemWithNotFoundUser() throws Exception {
+        User user = new User(1L, "user", "email@ya.ru");
+        Item item = new Item(1L, "item", "description", true, user, null);
+
+        when(itemService.create(any(), anyLong()))
+                .thenThrow(new NotFoundException(""));
+
+        mvc.perform(post("/items", ItemMapper.toItemDto(item), 1L)
+                        .content(mapper.writeValueAsString(ItemMapper.toItemDtoOutput(item)))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1L)
+                )
+                .andExpect(status().isNotFound());
     }
 
     @Test
