@@ -67,7 +67,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (size == 0 && from == 0) {
             throw new ValidationException("параметры не могут быть пустыми");
         }
-
         return requestRepository.findAllByRequestorIdNotOrderByCreatedDesc(userId,
                         PageRequest.of(from / size, size)).stream().map(ItemRequestMapper::toItemRequestDtoOutput)
                 .peek(itemRequestDtoOutput ->

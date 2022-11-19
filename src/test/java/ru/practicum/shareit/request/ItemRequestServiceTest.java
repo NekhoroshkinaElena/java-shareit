@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInput;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOutput;
@@ -39,23 +38,15 @@ public class ItemRequestServiceTest {
     private ItemRepository itemRepository;
 
     User user = new User(1L, "user", "descr");
-    User requestor = new User(2L, "requestor", "descr");
-    User owner = new User(3L, "owner", "descr");
-
     ItemRequestDtoInput itemRequestDtoInput = new ItemRequestDtoInput();
-
-    ItemRequestDtoOutput itemRequestDtoOutput = new ItemRequestDtoOutput(1L, "desc", LocalDateTime.now());
-
     ItemRequest itemRequest = new ItemRequest("request1");
     ItemRequest itemRequest2 = new ItemRequest("request2");
-
-    Item item = new Item(1L, "item", "desc", true, owner, itemRequest);
-    Item item2 = new Item(2L, "item2", "desc2", true, owner, itemRequest2);
 
     @Test
     public void addRequestWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 requestService.add(itemRequestDtoInput, user.getId()));
+
         assertEquals(notFoundException.getMessage(),
                 "Пользователь c идентификатором " + user.getId() + " не найден.");
     }
@@ -76,6 +67,7 @@ public class ItemRequestServiceTest {
     public void findAllOwnerWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 requestService.findAllOwner(user.getId()));
+
         assertEquals(notFoundException.getMessage(), "пользователь не найден");
     }
 
@@ -86,6 +78,7 @@ public class ItemRequestServiceTest {
                 .thenReturn(List.of(itemRequest, itemRequest2));
 
         List<ItemRequestDtoOutput> itemRequests = requestService.findAllOwner(user.getId());
+
         assertEquals(itemRequests.size(), 2);
         assertEquals(itemRequests.get(0).getId(), itemRequest.getId());
         assertEquals(itemRequests.get(0).getDescription(), itemRequest.getDescription());
@@ -95,22 +88,27 @@ public class ItemRequestServiceTest {
     public void findAllWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 requestService.findAll(0, 20, user.getId()));
+
         assertEquals(notFoundException.getMessage(), "пользователь не найден");
     }
 
     @Test
     public void findAllWithWrongParam() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
         ValidationException exception = assertThrows(ValidationException.class, () ->
                 requestService.findAll(0, -1, user.getId()));
+
         assertEquals(exception.getMessage(), "параметры не могут быть отрицательными");
     }
 
     @Test
     public void findAllWithEmptyParam() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+
         ValidationException exception = assertThrows(ValidationException.class, () ->
                 requestService.findAll(0, 0, user.getId()));
+
         assertEquals(exception.getMessage(), "параметры не могут быть пустыми");
     }
 
@@ -120,6 +118,7 @@ public class ItemRequestServiceTest {
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 requestService.findById(1L, 1L));
+
         assertEquals(notFoundException.getMessage(), "запрос с id 1 не существует");
     }
 
@@ -127,6 +126,7 @@ public class ItemRequestServiceTest {
     public void findByIdNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 requestService.findById(1L, 1L));
+
         assertEquals(notFoundException.getMessage(), "пользователь не найден");
     }
 
@@ -148,6 +148,7 @@ public class ItemRequestServiceTest {
     @Test
     public void requestMapperToRequest() {
         ItemRequest request1 = ItemRequestMapper.toItemRequest(itemRequestDtoInput);
+
         assertEquals(request1.getDescription(), itemRequestDtoInput.getDescription());
     }
 }

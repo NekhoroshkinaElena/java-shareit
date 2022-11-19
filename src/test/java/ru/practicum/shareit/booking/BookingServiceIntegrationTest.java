@@ -37,17 +37,16 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class BookingServiceIntegrationTest {
-
     private final EntityManager em;
     private final BookingService bookingService;
     private final UserService userService;
     private final ItemService itemService;
 
-    private User owner = new User(1L,
+    private final User owner = new User(1L,
             "owner",
             "emailOwner@ya.ru");
 
-    private Item item = new Item(
+    private final Item item = new Item(
             1L,
             "item",
             "description",
@@ -55,7 +54,7 @@ public class BookingServiceIntegrationTest {
             owner,
             null);
 
-    private Item item2 = new Item(
+    private final Item item2 = new Item(
             2L,
             "item2",
             "description2",
@@ -63,15 +62,15 @@ public class BookingServiceIntegrationTest {
             owner,
             null);
 
-    private User booker = new User(2L,
+    private final User booker = new User(2L,
             "booker",
             "emailBooker@ya.ru");
 
-    private BookingDtoInput bookingDtoInput = new BookingDtoInput(1L,
+    private final BookingDtoInput bookingDtoInput = new BookingDtoInput(1L,
             LocalDateTime.of(2022, 11, 20, 12, 0, 0),
             LocalDateTime.of(2022, 11, 25, 12, 0, 0));
 
-    private BookingDtoInput bookingDtoInput2 = new BookingDtoInput(2L,
+    private final BookingDtoInput bookingDtoInput2 = new BookingDtoInput(2L,
             LocalDateTime.of(2022, 11, 20, 12, 0, 0),
             LocalDateTime.of(2022, 11, 25, 12, 0, 0));
 
@@ -146,6 +145,7 @@ public class BookingServiceIntegrationTest {
         List<BookingDtoOutput> bookings = bookingService.findAllForOwner(
                 0, 10, owner.getId(), "ALL");
 
+        assertThat(bookings.size(), equalTo(2));
         assertTrue(bookings.contains(bookingDtoOutput1));
         assertTrue(bookings.contains(bookingDtoOutput2));
     }

@@ -29,9 +29,10 @@ public class UserServiceImplIntegrationTest {
     private final EntityManager em;
     private final UserService userService;
 
+    private final UserDto userDto = new UserDto(1L, "name", "email@ya.ru");
+
     @Test
     public void userSave() {
-        UserDto userDto = new UserDto(1L, "name", "email@ya.ru");
         userService.add(userDto);
 
         TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
@@ -44,7 +45,7 @@ public class UserServiceImplIntegrationTest {
 
     @Test
     public void getUserById() {
-        UserDto userDto = new UserDto(1L, "name", "email@ya.ru");
+
         UserDto createdUser = userService.add(userDto);
         UserDto userFromGet = userService.getById(createdUser.getId());
 
@@ -55,7 +56,6 @@ public class UserServiceImplIntegrationTest {
 
     @Test
     public void userUpdate() {
-        UserDto userDto = new UserDto(1L, "name", "email@ya.ru");
         userService.add(userDto);
         UserDto userUpdate = new UserDto(1L, "updateName", "updateEmail@ya.ru");
         userService.update(userUpdate, 1L);
@@ -94,11 +94,8 @@ public class UserServiceImplIntegrationTest {
 
     @Test
     public void deleteUser() {
-        UserDto userDto = new UserDto(1L, "name", "email@ya.ru");
         userService.add(userDto);
-
         userService.delete(userDto.getId());
-
         List<UserDto> users = userService.getAll();
 
         assertThat(users.size(), equalTo(0));

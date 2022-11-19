@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,15 +44,21 @@ public class BookingServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    User user = new User(1L, "name", "email@ya.ru");
+    User user = new User(1L,
+            "name",
+            "email@ya.ru");
 
-    User booker = new User(2L, "booker", "emailBooker@ya.ru");
+    User booker = new User(2L,
+            "booker",
+            "emailBooker@ya.ru");
 
-    Booking booking = new Booking(LocalDateTime.now().plusDays(1),
+    Booking booking = new Booking(
+            LocalDateTime.now().plusDays(1),
             LocalDateTime.now().plusDays(5),
             BookingStatus.WAITING);
 
-    Booking booking2 = new Booking(LocalDateTime.now().plusDays(2),
+    Booking booking2 = new Booking(
+            LocalDateTime.now().plusDays(2),
             LocalDateTime.now().plusDays(4),
             BookingStatus.WAITING);
 
@@ -59,8 +66,32 @@ public class BookingServiceTest {
             LocalDateTime.now().plusDays(1),
             LocalDateTime.now().plusDays(3));
 
-    Item item = new Item(1L, "item", "desc", true, user, null);
-    Item item2 = new Item(2L, "item2", "desc2", true, user, null);
+    ItemRequest itemRequest = new ItemRequest("Description ItemRequest");
+
+    Item item = new Item(1L,
+            "item",
+            "desc",
+            true,
+            user,
+            itemRequest);
+
+    Item item2 = new Item(2L,
+            "item2",
+            "desc2",
+            true,
+            user,
+            null);
+
+    @BeforeEach
+    void setUp() {
+        booking.setId(1L);
+        booking.setItem(item);
+        booking.setBooker(booker);
+
+        booking2.setId(2L);
+        booking2.setItem(item2);
+        booking2.setBooker(booker);
+    }
 
     @Test
     public void saveUser() {
@@ -80,47 +111,43 @@ public class BookingServiceTest {
     @Test
     public void saveBookingWithNotFoundItem() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-                bookingService.save(new BookingDtoInput(1L,
-                        LocalDateTime.now().plusDays(1),
-                        LocalDateTime.now().plusDays(3)), 1L));
+                bookingService.save(bookingDtoInput, user.getId()));
+
         assertEquals("Вещь с id " + item.getId() + " не найдена.", notFoundException.getMessage());
     }
 
     @Test
     public void saveBookingWithWrongUser() {
-        when(itemRepository.findById(anyLong())).thenReturn(
-                Optional.of(new Item(1L, "name", "desc", true,
-                        new User(1L, "name", "email@ya.ru"), new ItemRequest("desc"))));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
-                bookingService.save(new BookingDtoInput(1L,
-                        LocalDateTime.now().plusDays(1),
-                        LocalDateTime.now().plusDays(3)), 1L));
+                bookingService.save(bookingDtoInput, user.getId()));
+
         assertEquals("Владелец вещи не может её забронировать.", notFoundException.getMessage());
     }
 
     @Test
     public void saveBookingWithWrongTime() {
-        when(itemRepository.findById(anyLong())).thenReturn(
-                Optional.of(new Item(1L, "name", "desc", true,
-                        new User(1L, "name", "email@ya.ru"), new ItemRequest("desc"))));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.save(new BookingDtoInput(1L,
                         LocalDateTime.now(),
                         LocalDateTime.now().minusDays(1)), 2L));
+
         assertEquals("Установите корректное время для бронирования.", validationException.getMessage());
     }
 
     @Test
     public void saveBookingWithNotExistUser() {
         when(itemRepository.findById(anyLong())).thenReturn(
-                Optional.of(new Item(1L, "name", "desc", true,
-                        new User(1L, "name", "email@ya.ru"), new ItemRequest("desc"))));
+                Optional.of(item));
+
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.save(new BookingDtoInput(1L,
                         LocalDateTime.now().plusDays(1),
                         LocalDateTime.now().plusDays(2)), 2L));
+
         assertEquals("Пользователя c идентификатором " + 2L + " не существует.",
                 notFoundException.getMessage());
     }
@@ -131,11 +158,11 @@ public class BookingServiceTest {
                 Optional.of(new Item(1L, "name", "desc", false,
                         new User(1L, "name", "email@ya.ru"), new ItemRequest("desc"))));
         when(userRepository.findById(anyLong()))
-                .thenReturn(Optional.of(new User(1L, "name", "emal@ya.ru")));
+                .thenReturn(Optional.of(user));
+
         ValidationException validationException = assertThrows(ValidationException.class, () ->
-                bookingService.save(new BookingDtoInput(1L,
-                        LocalDateTime.now().plusDays(1),
-                        LocalDateTime.now().plusDays(2)), 2L));
+                bookingService.save(bookingDtoInput, 2L));
+
         assertEquals("Вещь занята другим пользователем.",
                 validationException.getMessage());
     }
@@ -144,6 +171,7 @@ public class BookingServiceTest {
     public void approveWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.approve(1L, 1L, true));
+
         assertEquals("пользователя c идентификатором " + 1 + " не существует.", notFoundException.getMessage());
     }
 
@@ -153,29 +181,24 @@ public class BookingServiceTest {
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.approve(1L, 1L, true));
+
         assertEquals("Такого бронирования не существует.", notFoundException.getMessage());
     }
 
     @Test
     public void approveWithWrongUser() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
-
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.approve(2L, 1L, true));
+
         assertEquals("Подтверждение или отклонение запроса на бронирование может быть выполнено " +
                 "только владельцем вещи.", notFoundException.getMessage());
     }
 
     @Test
     public void approveWithAlreadyApproveStatus() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.APPROVED);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
@@ -183,14 +206,12 @@ public class BookingServiceTest {
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.approve(1L, 1L, true));
+
         assertEquals("Статус бронирования уже подтверждён.", validationException.getMessage());
     }
 
     @Test
     public void approveBooking() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
@@ -209,14 +230,13 @@ public class BookingServiceTest {
     public void getByIdWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.getById(1L, 1L));
-        assertEquals("пользователя c идентификатором " + 1 + " не существует.", notFoundException.getMessage());
+
+        assertEquals("пользователя c идентификатором " + 1 + " не существует.",
+                notFoundException.getMessage());
     }
 
     @Test
     public void getNotFoundBooking() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
@@ -225,15 +245,13 @@ public class BookingServiceTest {
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.getById(3L, 3L));
+
         assertEquals("Получить данные о бронировании может либо автор бронирования" +
                 " либо владелец вещи.", notFoundException.getMessage());
     }
 
     @Test
     public void getBookingById() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
@@ -241,6 +259,7 @@ public class BookingServiceTest {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         BookingDtoOutput booking1 = bookingService.getById(3L, 1L);
+
         assertEquals(booking1.getId(), booking.getId());
         assertEquals(booking1.getStart(), booking.getStart());
         assertEquals(booking1.getEnd(), booking.getEnd());
@@ -251,6 +270,7 @@ public class BookingServiceTest {
     public void findAllForBookingWithNotFoundUser() {
         NotFoundException notFoundException = assertThrows(NotFoundException.class, () ->
                 bookingService.findAllForBooker(0, 20, booker.getId(), "ALL"));
+
         assertEquals("пользователя c идентификатором " + booker.getId() + " не существует.",
                 notFoundException.getMessage());
     }
@@ -261,6 +281,7 @@ public class BookingServiceTest {
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.findAllForBooker(-1, -1, booker.getId(), "ALL"));
+
         assertEquals("параметры не могут быть отрицательными", validationException.getMessage());
     }
 
@@ -270,19 +291,13 @@ public class BookingServiceTest {
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.findAllForBooker(0, 0, booker.getId(), "ALL"));
+
         assertEquals("параметры не могут быть пустыми", validationException.getMessage());
     }
 
     @Test
     public void findAllForBooking() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
@@ -302,20 +317,14 @@ public class BookingServiceTest {
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.findAllForOwner(0, 20, booker.getId(), "ALL"));
+
         assertEquals("Вы не можете получить список бронирований, так как у вас нет вещей.",
                 validationException.getMessage());
     }
 
     @Test
     public void findAllForOwner() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
@@ -336,20 +345,14 @@ public class BookingServiceTest {
 
         ValidationException validationException = assertThrows(ValidationException.class, () ->
                 bookingService.findAllForOwner(0, 20, booker.getId(), "UNKNOWN"));
+
         assertEquals("Unknown state: UNSUPPORTED_STATUS",
                 validationException.getMessage());
     }
 
     @Test
     public void findAllOwnerWithWaitingState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.WAITING);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
@@ -365,14 +368,7 @@ public class BookingServiceTest {
 
     @Test
     public void findAllOwnerWithRejectedState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.REJECTED);
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.REJECTED);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
@@ -382,19 +378,13 @@ public class BookingServiceTest {
 
         List<BookingDtoOutput> bookings = bookingService
                 .findAllForOwner(0, 20, user.getId(), "REJECTED");
+
         assertEquals(bookings.size(), 2);
     }
 
     @Test
     public void findAllOwnerWithApproveState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.REJECTED);
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.REJECTED);
 
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
@@ -404,20 +394,14 @@ public class BookingServiceTest {
 
         List<BookingDtoOutput> bookings = bookingService
                 .findAllForOwner(0, 20, user.getId(), "REJECTED");
+
         assertEquals(bookings.size(), 2);
     }
 
     @Test
     public void findAllOwnerWithFutureState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.APPROVED);
         booking.setStart(LocalDateTime.now().plusDays(1));
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.APPROVED);
         booking2.setStart(LocalDateTime.now().plusDays(1));
 
@@ -428,20 +412,14 @@ public class BookingServiceTest {
 
         List<BookingDtoOutput> bookings = bookingService
                 .findAllForOwner(0, 20, user.getId(), "FUTURE");
+
         assertEquals(bookings.size(), 2);
     }
 
     @Test
     public void findAllOwnerWithPastState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.APPROVED);
         booking.setEnd(LocalDateTime.now().minusDays(1));
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.APPROVED);
         booking2.setEnd(LocalDateTime.now().minusDays(1));
 
@@ -452,21 +430,15 @@ public class BookingServiceTest {
 
         List<BookingDtoOutput> bookings = bookingService
                 .findAllForOwner(0, 20, user.getId(), "PAST");
+
         assertEquals(bookings.size(), 2);
     }
 
     @Test
     public void findAllOwnerWithCurrentState() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.APPROVED);
         booking.setStart(LocalDateTime.now().minusDays(1));
         booking.setEnd(LocalDateTime.now().plusDays(1));
-
-        booking2.setId(2L);
-        booking2.setItem(item2);
-        booking2.setBooker(booker);
         booking2.setStatus(BookingStatus.APPROVED);
         booking2.setStart(LocalDateTime.now().minusDays(1));
         booking2.setEnd(LocalDateTime.now().plusDays(1));
@@ -478,17 +450,16 @@ public class BookingServiceTest {
 
         List<BookingDtoOutput> bookings = bookingService
                 .findAllForOwner(0, 20, user.getId(), "CURRENT");
+
         assertEquals(bookings.size(), 2);
     }
 
     @Test
     public void bookingMapperTest() {
-        booking.setId(1L);
-        booking.setItem(item);
-        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
 
         BookingDtoForItem bookingDtoForItem = BookingMapper.toBookingDtoForItem(booking);
+
         assertEquals(bookingDtoForItem.getId(), booking.getId());
         assertEquals(bookingDtoForItem.getBookerId(), booking.getBooker().getId());
     }

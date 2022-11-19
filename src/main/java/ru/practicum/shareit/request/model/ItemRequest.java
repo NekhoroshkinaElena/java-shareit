@@ -21,14 +21,11 @@ public class ItemRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private long id;
-
     @Column
     private String description;
-
     @ManyToOne
     @JoinColumn(name = "requestor", referencedColumnName = "id")
     private User requestor;
-
     @Column(name = "created")
     private LocalDateTime created;
 

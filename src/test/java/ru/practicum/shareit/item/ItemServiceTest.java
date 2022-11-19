@@ -47,25 +47,54 @@ public class ItemServiceTest {
     @Mock
     private ItemRequestRepository itemRequestRepository;
 
-    User user = new User(1L, "user", "userEmail@ua.ru");
-    ItemDto itemDto = new ItemDto(1L, "item", "desc", true, 0);
+    private final User user = new User(1L,
+            "user",
+            "userEmail@ua.ru");
 
-    Item item = new Item(1L, "item", "desc", true, user, null);
-    Item item2 = new Item(2L, "item2", "desc2", true, user, null);
+    private final ItemDto itemDto = new ItemDto(1L,
+            "item",
+            "desc",
+            true,
+            0);
 
-    Item itemUpdate = new Item(1L, "itemUpdate", "descUpdate", true, user, null);
-    ItemRequest itemRequest = new ItemRequest("description");
+    private final Item item = new Item(1L,
+            "item",
+            "desc",
+            true,
+            user,
+            null);
 
-    Booking booking = new Booking(LocalDateTime.now(), LocalDateTime.now(), BookingStatus.WAITING);
+    private final Item item2 = new Item(2L,
+            "item2",
+            "desc2",
+            true,
+            user,
+            null);
 
-    Comment comment = new Comment("comment", LocalDateTime.now());
+    private final Item itemUpdate = new Item(1L,
+            "update",
+            "desc",
+            true,
+            user,
+            null);
 
-    CommentDtoInput commentDtoInput = new CommentDtoInput();
+    private final ItemRequest itemRequest = new ItemRequest("description");
+
+    private final Booking booking = new Booking(
+            LocalDateTime.now(),
+            LocalDateTime.now(),
+            BookingStatus.WAITING);
+
+    private final Comment comment = new Comment("comment",
+            LocalDateTime.now());
+
+    private final CommentDtoInput commentDtoInput = new CommentDtoInput();
 
     @Test
     public void createItemWithNotFoundUser() {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.create(itemDto, user.getId()));
+
         assertEquals("Пользователь c идентификатором " + user.getId() + " не найден.", exception.getMessage());
     }
 
@@ -76,6 +105,7 @@ public class ItemServiceTest {
         when(itemRepository.save(any())).thenReturn(ItemMapper.toItem(itemDto));
 
         ItemDto itemDtoSave = itemService.create(itemDto, user.getId());
+
         assertEquals(itemDtoSave.getId(), itemDto.getId());
     }
 
@@ -83,7 +113,9 @@ public class ItemServiceTest {
     public void itemUpdateWithNotFoundUser() {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.update(itemDto, itemDto.getId(), user.getId()));
-        assertEquals("Пользователя c идентификатором " + user.getId() + " не существует.", exception.getMessage());
+
+        assertEquals("Пользователя c идентификатором " + user.getId() +
+                " не существует.", exception.getMessage());
     }
 
     @Test
@@ -92,6 +124,7 @@ public class ItemServiceTest {
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.update(itemDto, item.getId(), user.getId()));
+
         assertEquals("Вещь с id " + item.getId() + " не найдена.", exception.getMessage());
     }
 
@@ -102,6 +135,7 @@ public class ItemServiceTest {
 
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.update(itemDto, item.getId(), 2L));
+
         assertEquals("Обновить информацию о вещи может только её владелец.", exception.getMessage());
     }
 
@@ -121,6 +155,7 @@ public class ItemServiceTest {
     public void getByIdWithNotFoundItem() {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.getById(item.getId(), user.getId()));
+
         assertEquals("Вещь с id " + item.getId() + " не найдена.", exception.getMessage());
     }
 
@@ -133,18 +168,22 @@ public class ItemServiceTest {
         comment.setAuthor(user);
 
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-
         when(bookingRepository.findByItemIdAndEndBefore(anyLong(), any())).thenReturn(booking);
-
         when(commentRepository.getAllByItemId(anyLong())).thenReturn(List.of(comment));
 
         ItemOutputDto itemGet = itemService.getById(itemDto.getId(), user.getId());
+
+        assertEquals(itemGet.getId(), item.getId());
+        assertEquals(itemGet.getName(), item.getName());
+        assertEquals(itemGet.getDescription(), item.getDescription());
+        assertEquals(itemGet.getAvailable(), item.getAvailable());
     }
 
     @Test
     public void getAllWithNotFoundUser() {
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.getAll(user.getId(), 0, 20));
+
         assertEquals("Пользователя c идентификатором " + user.getId() + " не существует.",
                 exception.getMessage());
     }
@@ -152,6 +191,7 @@ public class ItemServiceTest {
     @Test
     public void searchWithEmptyText() {
         List<ItemDto> items = itemService.search("", 0, 20);
+
         assertEquals(items.size(), 0);
     }
 
@@ -159,6 +199,7 @@ public class ItemServiceTest {
     public void search() {
         when(itemRepository.search(any(), any())).thenReturn(List.of(item, item2));
         List<ItemDto> items = itemService.search("ite", 0, 20);
+
         assertEquals(items.size(), 2);
     }
 
@@ -166,6 +207,7 @@ public class ItemServiceTest {
     public void addCommentWithWrongBooking() {
         ValidationException exception = assertThrows(ValidationException.class,
                 () -> itemService.addComment(item.getId(), user.getId(), new CommentDtoInput()));
+
         assertEquals("Отзыв может оставить только тот пользователь, " +
                         "который брал эту вещь в аренду, и только после окончания срока аренды.",
                 exception.getMessage());
@@ -176,8 +218,10 @@ public class ItemServiceTest {
         commentDtoInput.setText("");
         when(bookingRepository.findBookingByItemIdAndBookerIdAndEndBefore(
                 anyLong(), anyLong(), any())).thenReturn(booking);
+
         ValidationException exception = assertThrows(ValidationException.class,
                 () -> itemService.addComment(item.getId(), user.getId(), commentDtoInput));
+
         assertEquals("Комментарий не может быть пустым.",
                 exception.getMessage());
     }
@@ -187,7 +231,9 @@ public class ItemServiceTest {
         comment.setId(1L);
         comment.setAuthor(user);
         comment.setItem(item);
+
         CommentDtoOutput commentDtoOutput = CommentMapper.commentDtoOutput(comment);
+
         assertEquals(commentDtoOutput.getId(), comment.getId());
         assertEquals(commentDtoOutput.getText(), comment.getText());
         assertEquals(commentDtoOutput.getCreated(), comment.getCreated());
@@ -199,6 +245,7 @@ public class ItemServiceTest {
         commentDtoInput.setText("any text");
         Comment comment = CommentMapper.toComment(commentDtoInput);
         comment.setItem(item);
+
         assertEquals(comment.getText(), commentDtoInput.getText());
         assertEquals(comment.getItem(), item);
     }

@@ -34,7 +34,7 @@ public class UserControllerTest {
     @Autowired
     private MockMvc mvc;
 
-    private UserDto userDto = new UserDto(
+    private final UserDto userDto = new UserDto(
             1L,
             "name",
             "email@ya.ru");
@@ -71,30 +71,27 @@ public class UserControllerTest {
     @Test
     void saveUserWithEmptyEmail() throws Exception {
         when(userService.add(any()))
-                .thenThrow(new ValidationException("Укажите адрес электронной почты"));
+                .thenThrow(new ValidationException(""));
 
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.error", is("Укажите адрес электронной почты")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void saveUserWithAlreadyExistEmail() throws Exception {
         when(userService.add(any()))
-                .thenThrow(new ValidationException("Пользователь с такой электронной почтой уже существует"));
+                .thenThrow(new AlreadyExistsException(""));
 
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.error",
-                        is("Пользователь с такой электронной почтой уже существует")));
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -102,6 +99,7 @@ public class UserControllerTest {
         long id = 1L;
         when(userService.getById(id))
                 .thenReturn(userDto);
+
         mvc.perform(get("/users/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
@@ -110,26 +108,16 @@ public class UserControllerTest {
     }
 
     @Test
-    void updateUserWithAlreadyExistEmail() throws Exception {
-        when(userService.update(any(), anyLong()))
-                .thenThrow(new AlreadyExistsException("пользователь с такой почтой уже существует"));
-
-        mvc.perform(patch("/users/" + userDto.getId()))
-                .andExpect(status().is4xxClientError());
-    }
-
-    @Test
-    void getUserWithWrongId() throws Exception {
-        when(userService.getById(anyLong())).thenThrow(new NotFoundException("Неверный id"));
+    void getUserIdWhenUserNotFound() throws Exception {
+        when(userService.getById(anyLong())).thenThrow(new NotFoundException(""));
 
         mvc.perform(get("/users/" + 1L))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void userUpdate() throws Exception {
         UserDto userDtoUpdate = new UserDto(1L, "name", "email@ya.ru");
-
 
         when(userService.update(userDtoUpdate, userDto.getId()))
                 .thenReturn(userDtoUpdate);
@@ -143,6 +131,28 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(userDtoUpdate.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(userDtoUpdate.getName())))
                 .andExpect(jsonPath("$.email", is(userDtoUpdate.getEmail())));
+    }
+
+    @Test
+    void updateUserWithAlreadyExistEmail() throws Exception {
+        when(userService.update(any(), anyLong()))
+                .thenThrow(new AlreadyExistsException(""));
+
+        mvc.perform(patch("/users/" + userDto.getId())
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateUserWhenUserNotFound() throws Exception {
+        when(userService.update(any(), anyLong()))
+                .thenThrow(new NotFoundException(""));
+
+        mvc.perform(patch("/users/" + userDto.getId()))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
