@@ -1,9 +1,11 @@
 package ru.practicum.shareit.request.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInput;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOutput;
 import ru.practicum.shareit.request.model.ItemRequest;
 
+@UtilityClass
 public class ItemRequestMapper {
 
     public static ItemRequest toItemRequest(ItemRequestDtoInput itemRequestDtoInput) {

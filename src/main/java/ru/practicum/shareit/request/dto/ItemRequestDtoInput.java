@@ -14,5 +14,5 @@ import javax.validation.constraints.NotNull;
 public class ItemRequestDtoInput {
     @NotNull
     @NotBlank
-    String description;
+    private String description;
 }

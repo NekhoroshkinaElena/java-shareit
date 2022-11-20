@@ -10,10 +10,10 @@ import java.util.List;
 @Getter
 @Setter
 public class ItemRequestDtoOutput {
-    long id;
-    String description;
-    LocalDateTime created;
-    List<ItemDto> items;
+    private long id;
+    private String description;
+    private LocalDateTime created;
+    private List<ItemDto> items;
 
     public ItemRequestDtoOutput(long id, String description, LocalDateTime localDateTime) {
         this.id = id;
