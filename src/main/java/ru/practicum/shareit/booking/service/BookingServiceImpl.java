@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDtoInput;
 import ru.practicum.shareit.booking.dto.BookingDtoOutput;
@@ -85,21 +86,34 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoOutput> findAllForBooker(long bookerId, String state) {
-        throwIfUserNotFound(bookerId);
-        return findBookings(bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId), state).stream()
+    public List<BookingDtoOutput> findAllForBooker(int from, int size, long bookerId, String state) {
+        throwIfWrongParam(from, size, bookerId);
+        return findBookings(bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId,
+                PageRequest.of(from / size, size)), state).stream()
                 .map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
     }
 
     @Override
-    public List<BookingDtoOutput> findAllForOwner(long ownerId, String state) {
-        throwIfUserNotFound(ownerId);
+    public List<BookingDtoOutput> findAllForOwner(int from, int size, long ownerId, String state) {
+        throwIfWrongParam(from, size, ownerId);
         if (itemRepository.findAllByOwnerId(ownerId).isEmpty()) {
             log.error("Вы не можете получить список бронирований, так как у вас нет вещей.");
             throw new ValidationException("Вы не можете получить список бронирований, так как у вас нет вещей.");
         }
-        return findBookings(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId), state).stream()
+        return findBookings(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId,
+                PageRequest.of(from / size, size)), state).stream()
                 .map(BookingMapper::toBookingDtoOutput).collect(Collectors.toList());
+    }
+
+    private void throwIfWrongParam(int from, int size, long ownerId) {
+        throwIfUserNotFound(ownerId);
+        if (from < 0 || size < 0) {
+            log.error("параметры не могут быть отрицательными");
+            throw new ValidationException("параметры не могут быть отрицательными");
+        }
+        if (size == 0 && from == 0) {
+            throw new ValidationException("параметры не могут быть пустыми");
+        }
     }
 
     public List<Booking> findBookings(List<Booking> bookings, String state) {
@@ -130,7 +144,7 @@ public class BookingServiceImpl implements BookingService {
     public void throwIfUserNotFound(long userId) {
         if (userRepository.findById(userId).isEmpty()) {
             log.error("Пользователя c идентификатором " + userId + " не существует.");
-            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует");
+            throw new NotFoundException("пользователя c идентификатором " + userId + " не существует.");
         }
     }
 

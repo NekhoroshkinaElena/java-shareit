@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -14,7 +15,7 @@ import ru.practicum.shareit.item.dto.ItemOutputDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -34,15 +35,18 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
+    @Override
     public ItemDto create(ItemDto itemDto, long userId) {
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(getUser(userId));
+        item.setRequest(itemRequestRepository.findById(itemDto.getRequestId()).orElse(null));
         if (item.getRequest() != null) {
             itemRequestRepository.save(item.getRequest());
         }
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
+    @Override
     public ItemDto update(ItemDto itemDto, long itemId, long userId) {
         Item item = ItemMapper.toItem(itemDto);
         throwIfUserNotFound(userId);
@@ -82,21 +86,25 @@ public class ItemServiceImpl implements ItemService {
         return itemOutputDto;
     }
 
-    public List<ItemOutputDto> getAll(long userId) {
+    @Override
+    public List<ItemOutputDto> getAll(long userId, int from, int size) {
         throwIfUserNotFound(userId);
-        return itemRepository.findAll().stream()
+        return itemRepository.findAll(PageRequest.of(from / size, size)).stream()
                 .filter(item -> item.getOwner().getId() == userId).map(item -> getById(item.getId(),
                         item.getOwner().getId()))
                 .collect(Collectors.toList());
     }
 
-    public List<ItemDto> search(String text) {
+    @Override
+    public List<ItemDto> search(String text, int from, int size) {
         if (text.isEmpty() || text.isBlank()) {
             return new ArrayList<>();
         }
-        return itemRepository.search(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemRepository.search(text, PageRequest.of(from / size, size))
+                .stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
+    @Override
     public CommentDtoOutput addComment(long itemId, long userId, CommentDtoInput commentDtoInput) {
         Booking booking = bookingRepository.findBookingByItemIdAndBookerIdAndEndBefore(
                 itemId, userId, LocalDateTime.now());
@@ -134,8 +142,8 @@ public class ItemServiceImpl implements ItemService {
     private User getUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
-                    log.error("Пользователя c идентификатором " + userId + " не найден.");
-                    return new NotFoundException("Пользователя c идентификатором " + userId + " не найден.");
+                    log.error("Пользователь c идентификатором " + userId + " не найден.");
+                    return new NotFoundException("Пользователь c идентификатором " + userId + " не найден.");
                 });
     }
 }

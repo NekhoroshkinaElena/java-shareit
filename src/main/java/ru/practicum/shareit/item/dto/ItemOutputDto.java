@@ -10,13 +10,13 @@ import java.util.List;
 @Getter
 @Setter
 public class ItemOutputDto {
-    Long id;
-    String name;
-    String description;
-    Boolean available;
-    BookingDtoForItem lastBooking;
-    BookingDtoForItem nextBooking;
-    List<CommentDtoOutput> comments;
+    private Long id;
+    private String name;
+    private String description;
+    private Boolean available;
+    private BookingDtoForItem lastBooking;
+    private BookingDtoForItem nextBooking;
+    private List<CommentDtoOutput> comments;
 
     public ItemOutputDto(Long id, String name, String description, Boolean available) {
         this.id = id;
