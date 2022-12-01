@@ -19,7 +19,6 @@ import javax.validation.constraints.PositiveOrZero;
 @RequiredArgsConstructor
 @Slf4j
 @Validated
-
 public class BookingController {
     private final BookingClient bookingClient;
 
