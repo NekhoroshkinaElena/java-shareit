@@ -24,11 +24,13 @@ public class ItemRequestController {
     @PostMapping
     public ResponseEntity<Object> add(@Valid @RequestBody ItemRequestDtoInput itemRequestDto,
                                       @RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("Creating request {}, userId={}", itemRequestDto, userId);
         return itemRequestClient.post(userId, itemRequestDto);
     }
 
     @GetMapping
     public ResponseEntity<Object> findAllOwner(@RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("Getting all requests for owner, userId={}", userId);
         return itemRequestClient.getAllOwner(userId);
     }
 
@@ -36,12 +38,14 @@ public class ItemRequestController {
     public ResponseEntity<Object> findAll(@PositiveOrZero @RequestParam(required = false, defaultValue = "0") int from,
                                           @Positive @RequestParam(required = false, defaultValue = "20") int size,
                                           @RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("Getting all requests, from={}, size={}, userId={}", from, size, userId);
         return itemRequestClient.getAll(from, size, userId);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> findById(@PathVariable("id") long requestId,
                                            @RequestHeader("X-Sharer-User-Id") long userId) {
+        log.info("Getting request, requestId={}, userId={}", requestId, userId);
         return itemRequestClient.getById(requestId, userId);
     }
 }

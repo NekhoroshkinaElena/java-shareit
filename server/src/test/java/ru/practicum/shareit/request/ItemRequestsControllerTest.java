@@ -8,7 +8,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.controller.ItemRequestController;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOutput;
 import ru.practicum.shareit.request.service.ItemRequestServiceImpl;
@@ -107,15 +106,6 @@ public class ItemRequestsControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$.[0].id").value(1))
                 .andExpect(jsonPath("$.[1].id").value(2));
-    }
-
-    @Test
-    public void findAllRequestsWhenShouldThrowValidationException() throws Exception {
-        when(itemRequestService.findAll(anyInt(), anyInt(), anyLong())).thenThrow(new ValidationException(""));
-
-        mvc.perform(get("/requests/all")
-                        .header("X-Sharer-User-Id", 1L))
-                .andExpect(status().isBadRequest());
     }
 
     @Test

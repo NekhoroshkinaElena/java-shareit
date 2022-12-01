@@ -199,19 +199,6 @@ public class BookingControllerTest {
     }
 
     @Test
-    void getAllForBookerWhenShouldThrowValidationException() throws Exception {
-        when(bookingService.findAllForBooker(anyInt(), anyInt(), anyLong(), anyString()))
-                .thenThrow(new ValidationException(""));
-
-        mvc.perform(get("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("from", "0")
-                        .param("size", "-20")
-                        .param("state", "ALL"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void getAllForOwner() throws Exception {
         when(bookingService.findAllForOwner(anyInt(), anyInt(), anyLong(), anyString()))
                 .thenReturn(List.of(bookingDtoOutput, bookingDtoOutput2));
@@ -235,18 +222,5 @@ public class BookingControllerTest {
         mvc.perform(get("/bookings/owner")
                         .header("X-Sharer-User-Id", 1L))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void getAllForOwnerWhenShouldThrowValidationException() throws Exception {
-        when(bookingService.findAllForOwner(anyInt(), anyInt(), anyLong(), anyString()))
-                .thenThrow(new ValidationException(""));
-
-        mvc.perform(get("/bookings/owner")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("from", "0")
-                        .param("size", "-20")
-                        .param("state", "ALL"))
-                .andExpect(status().isBadRequest());
     }
 }

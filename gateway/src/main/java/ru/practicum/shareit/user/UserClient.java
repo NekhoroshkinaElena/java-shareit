@@ -12,7 +12,6 @@ import ru.practicum.shareit.user.dto.UserDto;
 
 @Service
 public class UserClient extends BaseClient {
-//узнать что лучше использовать public или protected!!!
     private static final String API_PREFIX = "/users";
 
     @Autowired

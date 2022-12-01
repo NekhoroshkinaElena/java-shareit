@@ -115,10 +115,6 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Отзыв может оставить только тот пользователь, " +
                     "который брал эту вещь в аренду, и только после окончания срока аренды.");
         }
-        if (commentDtoInput.getText().isEmpty() || commentDtoInput.getText().isBlank()) {
-            log.error("Комментарий не может быть пустым.");
-            throw new ValidationException("Комментарий не может быть пустым.");
-        }
         Comment comment = CommentMapper.toComment(commentDtoInput);
         comment.setItem(getItem(itemId));
         comment.setAuthor(getUser(userId));

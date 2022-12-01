@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.AlreadyExistsException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -22,10 +21,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     public UserDto add(UserDto userDto) {
-        if (userDto.getEmail() == null || userDto.getEmail().isEmpty()) {
-            log.warn("При создании профиля не была указана почта пользователя.");
-            throw new ValidationException("Не указана почта пользователя.");
-        }
         User user = UserMapper.toUser(userDto);
         return UserMapper.toUserDto(userRepository.save(user));
     }

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInput;
@@ -60,13 +59,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             log.error("пользователь не найден");
             throw new NotFoundException("пользователь не найден");
         });
-        if (from < 0 || size < 0) {
-            log.error("параметры не могут быть отрицательными");
-            throw new ValidationException("параметры не могут быть отрицательными");
-        }
-        if (size == 0 && from == 0) {
-            throw new ValidationException("параметры не могут быть пустыми");
-        }
         return requestRepository.findAllByRequestorIdNotOrderByCreatedDesc(userId,
                         PageRequest.of(from / size, size)).stream().map(ItemRequestMapper::toItemRequestDtoOutput)
                 .peek(itemRequestDtoOutput ->

@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDtoInput;
 import ru.practicum.shareit.request.dto.ItemRequestDtoOutput;
@@ -90,26 +89,6 @@ public class ItemRequestServiceTest {
                 requestService.findAll(0, 20, user.getId()));
 
         assertEquals(notFoundException.getMessage(), "пользователь не найден");
-    }
-
-    @Test
-    public void findAllWithWrongParam() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                requestService.findAll(0, -1, user.getId()));
-
-        assertEquals(exception.getMessage(), "параметры не могут быть отрицательными");
-    }
-
-    @Test
-    public void findAllWithEmptyParam() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-
-        ValidationException exception = assertThrows(ValidationException.class, () ->
-                requestService.findAll(0, 0, user.getId()));
-
-        assertEquals(exception.getMessage(), "параметры не могут быть пустыми");
     }
 
     @Test

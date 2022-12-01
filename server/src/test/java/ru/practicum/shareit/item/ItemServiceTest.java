@@ -214,19 +214,6 @@ public class ItemServiceTest {
     }
 
     @Test
-    public void addCommentWithEmptyComment() {
-        commentDtoInput.setText("");
-        when(bookingRepository.findBookingByItemIdAndBookerIdAndEndBefore(
-                anyLong(), anyLong(), any())).thenReturn(booking);
-
-        ValidationException exception = assertThrows(ValidationException.class,
-                () -> itemService.addComment(item.getId(), user.getId(), commentDtoInput));
-
-        assertEquals("Комментарий не может быть пустым.",
-                exception.getMessage());
-    }
-
-    @Test
     public void mapperToCommentDtoOutput() {
         comment.setId(1L);
         comment.setAuthor(user);

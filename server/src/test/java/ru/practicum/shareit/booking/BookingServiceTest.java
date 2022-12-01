@@ -276,26 +276,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    public void findAllForBookingWithWrongParams() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-
-        ValidationException validationException = assertThrows(ValidationException.class, () ->
-                bookingService.findAllForBooker(-1, -1, booker.getId(), "ALL"));
-
-        assertEquals("параметры не могут быть отрицательными", validationException.getMessage());
-    }
-
-    @Test
-    public void findAllForBookingWithEmptyParams() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-
-        ValidationException validationException = assertThrows(ValidationException.class, () ->
-                bookingService.findAllForBooker(0, 0, booker.getId(), "ALL"));
-
-        assertEquals("параметры не могут быть пустыми", validationException.getMessage());
-    }
-
-    @Test
     public void findAllForBooking() {
         booking.setStatus(BookingStatus.WAITING);
         booking2.setStatus(BookingStatus.WAITING);
@@ -336,18 +316,6 @@ public class BookingServiceTest {
         List<BookingDtoOutput> bookings = bookingService.findAllForOwner(0, 20, user.getId(), "ALL");
 
         assertEquals(bookings.size(), 2);
-    }
-
-    @Test
-    public void findAllOwnerWithUnknownState() {
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-        when(itemRepository.findAllByOwnerId(anyLong())).thenReturn((List.of(item, item2)));
-
-        ValidationException validationException = assertThrows(ValidationException.class, () ->
-                bookingService.findAllForOwner(0, 20, booker.getId(), "UNKNOWN"));
-
-        assertEquals("Unknown state: UNSUPPORTED_STATUS",
-                validationException.getMessage());
     }
 
     @Test
